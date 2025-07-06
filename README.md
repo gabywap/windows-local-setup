@@ -138,17 +138,11 @@ Ez a projekt egy teljesen **automatikus, testreszabott Windows 10 / 11 telepít�
 
 ---
 
-
-
-# 🪟 Windows Local Setup (Windows 11/10)
-
-Ez a projekt egy teljesen **automatikus, testreszabott Windows 10 / 11 telepítést** tesz lehetővé `autounattend.xml` segítségével. A rendszer telepítése közben PowerShell szkriptek futnak le, melyek eltávolítanak felesleges alkalmazásokat, engedélyeznek hasznos beállításokat, és helyi felhasználót használnak Microsoft-fiók helyett.
-
----
-
 ## 📁 Fájlstruktúra
 
 windows-local-setup/
+
+
 ├── autounattend.xml
 ├── Setup/
 │   └── Install-Apps.ps1
