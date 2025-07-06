@@ -1,71 +1,377 @@
-<?xml version="1.0" encoding="utf-8"?>
-<unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+# windows-local-setup
 
+Ez a repository egy **Windows 10 és Windows 11 manuális partícionálás nélküli, helyi fiókos (nem Microsoft fiók) automatikus telepítéséhez** készült `autounattend.xml` fájlt és PowerShell szkripteket tartalmaz. A telepítés végén a szkriptek automatikusan lefutnak.
+
+## Főbb jellemzők
+- Nem igényel TPM vagy SecureBoot követelményt (azokat a beállításokat kikerüli)
+- Magyar nyelvű telepítés és beállítások
+- Helyi fiók létrehozása Microsoft-fiók nélkül
+- Alap Windows alkalmazások és funkciók eltávolítása a végén PowerShell segítségével
+- OOBE (Out-Of-Box Experience) automatikus lépések, mint EULA elfogadás, telepítés gyorsítása
+- PowerShell szkriptek futtatása a telepítés során a testreszabáshoz
+
+---
+
+## autounattend.xml magyarázat (kommentákkal)
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+
+  <!-- offlineServicing pass: itt nem használunk beállítást -->
+  <settings pass="offlineServicing"></settings>
+
+  <!-- windowsPE pass: telepítés kezdeti lépései -->
   <settings pass="windowsPE">
+
+    <!-- Nemzetközi beállítások a telepítő nyelvéhez -->
     <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
       <SetupUILanguage>
-        <UILanguage>hu-HU</UILanguage>
+        <UILanguage>hu-HU</UILanguage> <!-- Telepítő nyelve magyar -->
       </SetupUILanguage>
-      <InputLocale>hu-HU</InputLocale>
-      <SystemLocale>hu-HU</SystemLocale>
+      <InputLocale>040e:0000040e</InputLocale> <!-- Billentyűzet magyar -->
+      <SystemLocale>hu-HU</SystemLocale>       <!-- Rendszer lokalizáció -->
       <UILanguage>hu-HU</UILanguage>
       <UserLocale>hu-HU</UserLocale>
     </component>
 
+    <!-- Telepítő konfigurációk -->
     <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-      <DiskConfiguration>
-        <WillShowUI>OnError</WillShowUI>
-      </DiskConfiguration>
-      <ImageInstall>
-        <OSImage>
-          <InstallFrom>
-            <MetaData wcm:action="add">
-              <Key>/IMAGE/INDEX</Key>
-              <Value>6</Value>
-            </MetaData>
-          </InstallFrom>
-          <InstallToAvailablePartition>true</InstallToAvailablePartition>
-          <WillShowUI>OnError</WillShowUI>
-        </OSImage>
-      </ImageInstall>
+
+      <!-- Termékkulcs beállítása (itt a Windows 10/11 Home kulcs helyett generikus kulcs) -->
       <UserData>
-        <AcceptEula>true</AcceptEula>
-        <FullName>Admin</FullName>
-        <Organization>Otthon</Organization>
+        <ProductKey>
+          <Key>VK7JG-NPHTM-C97JM-9MPGT-3V66T</Key> <!-- Ez egy általános telepítő kulcs -->
+          <WillShowUI>OnError</WillShowUI>
+        </ProductKey>
+        <AcceptEula>true</AcceptEula> <!-- Elfogadja az EULA-t automatikusan -->
       </UserData>
-      <EnableFirewall>true</EnableFirewall>
-      <BypassTPMCheck>true</BypassTPMCheck>
-      <BypassSecureBootCheck>true</BypassSecureBootCheck>
-      <BypassCPUCheck>true</BypassCPUCheck>
+
+      <UseConfigurationSet>true</UseConfigurationSet>
+
+      <!-- A Windows 11 és 10 TPM és SecureBoot ellenőrzéseinek kikerülése -->
+      <RunSynchronous>
+        <RunSynchronousCommand wcm:action="add">
+          <Order>1</Order>
+          <Path>reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassTPMCheck /t REG_DWORD /d 1 /f</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+          <Order>2</Order>
+          <Path>reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassSecureBootCheck /t REG_DWORD /d 1 /f</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+          <Order>3</Order>
+          <Path>reg.exe add "HKLM\SYSTEM\Setup\LabConfig" /v BypassRAMCheck /t REG_DWORD /d 1 /f</Path>
+        </RunSynchronousCommand>
+      </RunSynchronous>
+
     </component>
   </settings>
 
+  <!-- generalize pass: itt nincs beállítás -->
+
+  <settings pass="generalize"></settings>
+
+  <!-- specialize pass: hálózati és gépi specifikus beállítások -->
+
+  <settings pass="specialize">
+    <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <RunSynchronous>
+        <!-- Több parancs szkriptből: egyedi Powershell futtatás, reg betöltés -->
+        <RunSynchronousCommand wcm:action="add">
+          <Order>1</Order>
+          <Path>powershell.exe -WindowStyle Normal -NoProfile -Command "$xml = [xml]::new(); $xml.Load('C:\Windows\Panther\unattend.xml'); $sb = [scriptblock]::Create( $xml.unattend.Extensions.ExtractScript ); Invoke-Command -ScriptBlock $sb -ArgumentList $xml;"</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+          <Order>2</Order>
+          <Path>powershell.exe -WindowStyle Normal -NoProfile -Command "Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\Specialize.ps1' -Raw | Invoke-Expression;"</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+          <Order>3</Order>
+          <Path>reg.exe load "HKU\DefaultUser" "C:\Users\Default\NTUSER.DAT"</Path> <!-- DefaultUser regisztrációs fa betöltése -->
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+          <Order>4</Order>
+          <Path>powershell.exe -WindowStyle Normal -NoProfile -Command "Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\DefaultUser.ps1' -Raw | Invoke-Expression;"</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+          <Order>5</Order>
+          <Path>reg.exe unload "HKU\DefaultUser"</Path> <!-- DefaultUser regisztrációs fa eltávolítása -->
+        </RunSynchronousCommand>
+      </RunSynchronous>
+    </component>
+
+    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <TimeZone>Central Europe Standard Time</TimeZone> <!-- Időzóna beállítása -->
+    </component>
+  </settings>
+
+  <!-- auditSystem és auditUser passzokban nincs beállítás -->
+
+  <settings pass="auditSystem"></settings>
+  <settings pass="auditUser"></settings>
+
+  <!-- oobeSystem pass: az OOBE folyamat beállításai -->
+
   <settings pass="oobeSystem">
     <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-      <InputLocale>hu-HU</InputLocale>
-      <SystemLocale>hu-HU</SystemLocale>
-      <UILanguage>hu-HU</UILanguage>
-      <UserLocale>hu-HU</UserLocale>
+      <InputLocale>040e:0000040e</InputLocale>  <!-- Billentyűzet magyar -->
+      <SystemLocale>hu-HU</SystemLocale>        <!-- Rendszer lokalizáció -->
+      <UILanguage>hu-HU</UILanguage>            <!-- UI magyar -->
+      <UserLocale>hu-HU</UserLocale>            <!-- Felhasználó lokalizáció -->
     </component>
 
     <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
       <OOBE>
-        <HideEULAPage>true</HideEULAPage>
-        <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
-        <NetworkLocation>Work</NetworkLocation>
-        <ProtectYourPC>1</ProtectYourPC>
+        <ProtectYourPC>3</ProtectYourPC>             <!-- Automatikusan később frissítések, nem ajánlja az ajánlottat -->
+        <HideEULAPage>true</HideEULAPage>            <!-- EULA oldal elrejtése -->
+        <HideWirelessSetupInOOBE>false</HideWirelessSetupInOOBE> <!-- WiFi beállítás megjelenik -->
+        <HideOnlineAccountScreens>true</HideOnlineAccountScreens> <!-- Microsoft fiók létrehozás elrejtése -->
       </OOBE>
-      <RegisteredOrganization>Otthon</RegisteredOrganization>
-      <RegisteredOwner>Admin</RegisteredOwner>
-      <TimeZone>Central Europe Standard Time</TimeZone>
       <FirstLogonCommands>
         <SynchronousCommand wcm:action="add">
           <Order>1</Order>
-          <CommandLine>cmd /c %WINDIR%\Setup\Scripts\SetupComplete.cmd</CommandLine>
-          <Description>Run SetupComplete</Description>
+          <CommandLine>powershell.exe -WindowStyle Normal -NoProfile -Command "Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\FirstLogon.ps1' -Raw | Invoke-Expression;"</CommandLine>
+          <!-- Első bejelentkezéskor lefutó PowerShell parancs -->
         </SynchronousCommand>
       </FirstLogonCommands>
     </component>
   </settings>
+
+  <!-- Extensions: speciális PowerShell szkriptek kiírása telepítés közben -->
+  <Extensions xmlns="https://schneegans.de/windows/unattend-generator/">
+
+    <!-- ExtractScript rész: a PowerShell szkriptek fájlba mentése a megadott helyre -->
+    <ExtractScript>
+param(
+    [xml] $Document
+);
+
+foreach( $file in $Document.unattend.Extensions.File ) {
+    $path = [System.Environment]::ExpandEnvironmentVariables( $file.GetAttribute( 'path' ) );
+    mkdir -Path( $path | Split-Path -Parent ) -ErrorAction 'SilentlyContinue';
+    $encoding = switch( [System.IO.Path]::GetExtension( $path ) ) {
+        { $_ -in '.ps1', '.xml' } { [System.Text.Encoding]::UTF8; }
+        { $_ -in '.reg', '.vbs', '.js' } { [System.Text.UnicodeEncoding]::new( $false, $true ); }
+        default { [System.Text.Encoding]::Default; }
+    };
+    $bytes = $encoding.GetPreamble() + $encoding.GetBytes( $file.InnerText.Trim() );
+    [System.IO.File]::WriteAllBytes( $path, $bytes );
+}
+    </ExtractScript>
+
+    <!-- Itt kezdődnek a telepítés során létrehozott PowerShell szkriptek -->
+
+    <!-- RemovePackages.ps1: eltávolítja a fölösleges gyári alkalmazásokat, mint Bing, Xbox, Skype stb. -->
+    <File path="C:\Windows\Setup\Scripts\RemovePackages.ps1">
+      <![CDATA[
+$selectors = @(
+    'Microsoft.BingSearch';
+    'Microsoft.WindowsMaps';
+    'Microsoft.MicrosoftOfficeHub';
+    'Microsoft.SkypeApp';
+    'Microsoft.Xbox.TCUI';
+    'Microsoft.XboxApp';
+    'Microsoft.XboxGameOverlay';
+    'Microsoft.XboxGamingOverlay';
+    'Microsoft.XboxIdentityProvider';
+    'Microsoft.XboxSpeechToTextOverlay';
+    'Microsoft.GamingApp';
+    'Microsoft.YourPhone';
+);
+$getCommand = {
+  Get-AppxProvisionedPackage -Online;
+};
+$filterCommand = {
+  $_.DisplayName -eq $selector;
+};
+$removeCommand = {
+  [CmdletBinding()]
+  param(
+    [Parameter( Mandatory, ValueFromPipeline )]
+    $InputObject
+  );
+  process {
+    $InputObject | Remove-AppxProvisionedPackage -AllUsers -Online -ErrorAction 'Continue';
+  }
+};
+$type = 'Package';
+$logfile = 'C:\Windows\Setup\Scripts\RemovePackages.log';
+& {
+    $installed = & $getCommand;
+    foreach( $selector in $selectors ) {
+        $result = [ordered] @{
+            Selector = $selector;
+        };
+        $found = $installed | Where-Object -FilterScript $filterCommand;
+        if( $found ) {
+            $result.Output = $found | & $removeCommand;
+            if( $? ) {
+                $result.Message = "$type removed.";
+            } else {
+                $result.Message = "$type not removed.";
+                $result.Error = $Error[0];
+            }
+        } else {
+            $result.Message = "$type not installed.";
+        }
+        $result | ConvertTo-Json -Depth 3 -Compress;
+    }
+} *>&1 >> $logfile;
+      ]]>
+    </File>
+
+    <!-- RemoveCapabilities.ps1: eltávolít bizonyos Windows képességeket és szolgáltatásokat -->
+    <File path="C:\Windows\Setup\Scripts\RemoveCapabilities.ps1">
+      <![CDATA[
+$selectors = @(
+    'Print.Fax.Scan';
+    'App.StepsRecorder';
+    'Hello.Face.18967';
+    'Hello.Face.Migration.18967';
+    'Hello.Face.20134';
+);
+$getCommand = {
+  Get-WindowsCapability -Online | Where-Object -Property 'State' -NotIn -Value @(
+    'NotPresent';
+    'Removed';
+  );
+};
+$filterCommand = {
+  ($_.Name -split '~')[0] -eq $selector;
+};
+$removeCommand = {
+  [CmdletBinding()]
+  param(
+    [Parameter( Mandatory, ValueFromPipeline )]
+    $InputObject
+  );
+  process {
+    $InputObject | Remove-WindowsCapability -Online -ErrorAction 'Continue';
+  }
+};
+$type = 'Capability';
+$logfile = 'C:\Windows\Setup\Scripts\RemoveCapabilities.log';
+& {
+    $installed = & $getCommand;
+    foreach( $selector in $selectors ) {
+        $result = [ordered] @{
+            Selector = $selector;
+        };
+        $found = $installed | Where-Object -FilterScript $filterCommand;
+        if( $found ) {
+            $result.Output = $found | & $removeCommand;
+            if( $? ) {
+                $result.Message = "$type removed.";
+            } else {
+                $result.Message = "$type not removed.";
+                $result.Error = $Error[0];
+            }
+        } else {
+            $result.Message = "$type not installed.";
+        }
+        $result | ConvertTo-Json -Depth 3 -Compress;
+    }
+} *>&1 >> $logfile;
+      ]]>
+    </File>
+
+    <!-- SetStartPins.ps1: Start menü pinjeinek alaphelyzetbe állítása -->
+    <File path="C:\Windows\Setup\Scripts\SetStartPins.ps1">
+      <![CDATA[
+$json = '{"pinnedList":[]}';
+if( [System.Environment]::OSVersion.Version.Build -lt 20000 ) {
+    return;
+}
+$key = 'Registry::HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\Start';
+New-Item -Path $key -ItemType 'Directory' -ErrorAction 'SilentlyContinue';
+Set-ItemProperty -LiteralPath $key -Name 'ConfigureStartPins' -Value $json -Type 'String';
+      ]]>
+    </File>
+
+    <!-- Specialize.ps1: a telepítés során futtatandó főbb parancsok, beállítások -->
+    <File path="C:\Windows\Setup\Scripts\Specialize.ps1">
+      <![CDATA[
+$scripts = @(
+    {
+        reg.exe add "HKLM\SYSTEM\Setup\MoSetup" /v AllowUpgradesWithUnsupportedTPMOrCPU /t REG_DWORD /d 1 /f;
+    };
+    {
+        Remove-Item -LiteralPath 'C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\OneDrive.lnk', 'C:\Windows\System32\OneDriveSetup.exe', 'C:\Windows\SysWOW64\OneDriveSetup.exe' -ErrorAction 'Continue';
+    };
+    {
+        Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\RemovePackages.ps1' -Raw | Invoke-Expression;
+    };
+    {
+        Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\RemoveCapabilities.ps1' -Raw | Invoke-Expression;
+    };
+    {
+        net.exe accounts /maxpwage:UNLIMITED;
+    };
+    {
+        reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" /v SmartScreenEnabled /t REG_SZ /d "Off" /f;
+        reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WTDS\Components" /v ServiceEnabled /t REG_DWORD /d 0 /f;
+        reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WTDS\Components" /v NotifyMalicious /t REG_DWORD /d 0 /f;
+        reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WTDS\Components" /v NotifyPasswordReuse /t REG_DWORD /d 0 /f;
+        reg.exe add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WTDS\Components" /v NotifyUnsafeApp /t REG_DWORD /d 0 /f;
+        reg.exe add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender Security Center\Systray" /v HideSystray /t REG_DWORD /d 1 /f;
+    };
+    {
+        reg.exe add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled /t REG_DWORD /d 1 /f
+    };
+    {
+        netsh.exe advfirewall firewall set rule group="@FirewallAPI.dll,-28752" new enable=Yes;
+        reg.exe add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f;
+    };
+    {
+        Set-ExecutionPolicy -Scope 'LocalMachine' -ExecutionPolicy 'RemoteSigned' -Force;
+    };
+    {
+        reg.exe add "HKLM\SOFTWARE\Policies\Microsoft\Dsh" /v AllowNewsAndInterests /t REG_DWORD /d 0 /f;
+    };
+    {
+        reg.exe add "HKLM\SOFTWARE\Policies\Microsoft\WindowsExplorer" /v DisableNotificationCenter /t REG_DWORD /d 1 /f;
+    };
+    {
+        Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\SetStartPins.ps1' -Raw | Invoke-Expression;
+    }
+);
+foreach( $s in $scripts ) {
+    try {
+        &$s;
+    } catch {
+        Write-Warning $_.Exception.Message;
+    }
+}
+      ]]>
+    </File>
+
+    <!-- DefaultUser.ps1: alapértelmezett felhasználó profil és fiók beállítása helyileg -->
+    <File path="C:\Windows\Setup\Scripts\DefaultUser.ps1">
+      <![CDATA[
+$UserName = 'LokálisFelhasználó'
+$Password = 'Jelszo123!' | ConvertTo-SecureString -AsPlainText -Force
+New-LocalUser -Name $UserName -Password $Password -FullName 'Lokális Felhasználó' -Description 'Helyi fiók a telepítés után' -AccountNeverExpires
+Add-LocalGroupMember -Group 'Administrators' -Member $UserName
+Remove-LocalUser -Name 'Administrator' # opcionális, ha az alapértelmezett admin nem kell
+      ]]>
+    </File>
+
+    <!-- FirstLogon.ps1: első bejelentkezéskor lefutó szkript -->
+    <File path="C:\Windows\Setup\Scripts\FirstLogon.ps1">
+      <![CDATA[
+# Példa: első indításkor frissítések telepítése, extra programok
+Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy Bypass -File C:\Windows\Setup\Scripts\Install-Apps.ps1' -NoNewWindow -Wait
+      ]]>
+    </File>
+
+    <!-- Install-Apps.ps1: további programok telepítése telepítés után (például winget alapú csomagok) -->
+    <File path="C:\Windows\Setup\Scripts\Install-Apps.ps1">
+      <![CDATA[
+# Példa parancsok itt, winget, chocolatey, vagy saját telepítők
+      ]]>
+    </File>
+
+  </Extensions>
 
 </unattend>
