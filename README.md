@@ -197,6 +197,90 @@ Ez a projekt egy teljesen **automatikus, testreszabott Windows 10 / 11 telepít�
 
 ---
 
+# Windows 11 Automatizált Telepítés – Ellenőrző lista (checklist)
+
+## 1. Előkészületek
+
+- [ ] **ISO / telepítő előkészítése**  
+  Windows 11 ISO vagy telepítő pendrive készen áll.
+
+- [ ] **Autounattend.xml elhelyezése**  
+  Az `autounattend.xml` fájl a telepítő gyökerében vagy a megfelelő helyen van (pl. USB-n a gyökérkönyvtárban).
+
+- [ ] **Szkriptek helye**  
+  Az összes PowerShell script (pl. `Install-Apps.ps1`, `RemovePackages.ps1`) elérhető a telepítéskor (pl. `Sources\OEM\Setup\Scripts\` vagy `C:\Windows\Setup\Scripts\`).
+
+---
+
+## 2. Autounattend.xml ellenőrzése
+
+- [ ] **Nyelvi és területi beállítások** (pl. hu-HU) megfelelően be vannak állítva.
+
+- [ ] **Termékkulcs** helyesen megadva, vagy telepítés nélküli verziót használod.
+
+- [ ] **TPM, SecureBoot, RAM ellenőrzések megkerülése** beállítva a `LabConfig` reg kulcsokkal, ha szükséges.
+
+- [ ] **Felhasználói fiók beállítása** (pl. helyi fiók létrehozása vagy Microsoft-fiók elkerülése).
+
+- [ ] **Futtatandó szkriptek definiálva a megfelelő telepítési fázisokban** (`windowsPE`, `specialize`, `oobeSystem`).
+
+---
+
+## 3. Szkriptek ellenőrzése
+
+- [ ] **PowerShell szkriptek futtathatók** (pl. futtatási politika engedélyezve: `RemoteSigned` vagy `Bypass`).
+
+- [ ] **A szkriptek elérési útja helyes** (pl. `C:\Windows\Setup\Scripts\Install-Apps.ps1` vagy aktuális hely).
+
+- [ ] **Szkriptek nem igényelnek manuális beavatkozást** (pl. nincsenek promptok, hibák).
+
+- [ ] **Adminisztrátori jogosultság biztosított**, ahol szükséges.
+
+- [ ] **Naplózás vagy hibakezelés beállítva**, hogy visszakövethető legyen a telepítés menete.
+
+---
+
+## 4. Telepítés közbeni ellenőrzés
+
+- [ ] **Telepítés elindítása az autounattend.xml használatával** (pl. USB-ről bootolva).
+
+- [ ] **Szkriptek lefutnak a megfelelő fázisokban** (`windowsPE`, `specialize`, `oobeSystem`).
+
+- [ ] **Nem jelennek meg váratlan képernyők vagy hibák a telepítés során**.
+
+- [ ] **Eltávolítani kívánt alkalmazások törlődnek** a szkriptek szerint.
+
+- [ ] **Az alkalmazások telepítése sikeresen lefut** az `Install-Apps.ps1` vagy más szkriptek alapján.
+
+---
+
+## 5. Telepítés után
+
+- [ ] **Helyi fiók létrejött, bejelentkezés működik**.
+
+- [ ] **Rendszerbeállítások (időzóna, nyelv, billentyűzetkiosztás) helyesek**.
+
+- [ ] **Tálca, Start menü, ikonok testreszabása megvan**.
+
+- [ ] **Felesleges alkalmazások (Xbox, OneDrive stb.) eltávolítva**.
+
+- [ ] **Internet és hálózati kapcsolat rendben van**.
+
+- [ ] **Naplók (pl. `Specialize.log`, `Setupact.log`) ellenőrizve hibák miatt**.
+
+---
+
+## 6. Hibakezelés és további teendők
+
+- [ ] **Hibák esetén naplók ellenőrzése** a `C:\Windows\Setup\Scripts\` és `C:\Windows\Panther` mappákban.
+
+- [ ] **Szkriptek és autounattend.xml módosítása a tapasztalatok alapján**.
+
+- [ ] **Újratelepítés és tesztelés amíg stabil és hibamentes a folyamat.**
+
+---
+
+
 ## 🤝 Közreműködés
 
 Szívesen veszek minden javaslatot, pull requestet vagy hibajelentést.
