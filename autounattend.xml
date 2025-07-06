@@ -1,4 +1,4 @@
-# windows-local-setup
+﻿# windows-local-setup
 
 Ez a repository egy **Windows 10 és Windows 11 manuális partícionálás nélküli, helyi fiókos (nem Microsoft fiók) automatikus telepítéséhez** készült `autounattend.xml` fájlt és PowerShell szkripteket tartalmaz. A telepítés végén a szkriptek automatikusan lefutnak.
 

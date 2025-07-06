@@ -1,4 +1,4 @@
-# Példa alkalmazás telepítések winget-tel
+﻿# Példa alkalmazás telepítések winget-tel
 
 Write-Output "Telepítés elkezdődött..."
 
