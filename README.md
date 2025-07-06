@@ -147,10 +147,18 @@ Ez a projekt egy teljesen **automatikus, testreszabott Windows 10 / 11 telepít�
 ---
 
 ## 📁 Fájlstruktúra
-windows-local-setup/
-<pre> ``` windows-local-setup/ ├── autounattend.xml ├── Setup/ │ └── Install-Apps.ps1 ├── Sources/ │ └── $OEM$/ │ └── $$/ │ └── Setup/ │ └── Scripts/ │ └── SetupComplete.cmd └── README.md ``` </pre>
 
----
+windows-local-setup/
+├── autounattend.xml
+├── Setup/
+│   └── Install-Apps.ps1
+├── Sources/
+│   └── $OEM$/
+│       └── $$/ 
+│           └── Setup/
+│               └── Scripts/
+│                   └── SetupComplete.cmd
+└── README.md
 
 ---
 
