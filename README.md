@@ -78,3 +78,86 @@ $Password = 'Jelszo123!' | ConvertTo-SecureString -AsPlainText -Force
 New-LocalUser -Name $UserName -Password $Password -FullName 'Lokális Felhasználó' -Description 'Helyi fiók a telepítés után' -AccountNeverExpires
 Add-LocalGroupMember -Group 'Administrators' -Member $UserName
 Remove-LocalUser -Name 'Administrator' # opcionális, ha az alapértelmezett admin nem kell
+
+# windows-local-setup
+
+Ez a projekt egy `autounattend.xml` fájlt tartalmaz, amely lehetővé teszi a Windows 10 és Windows 11 telepítését:
+
+- Manuális partícionálás (nem automatikus)
+- Helyi felhasználó létrehozás (nem Microsoft fiók)
+- Telepítés végén automatikusan futtat egy PowerShell szkriptet (programtelepítéshez)
+- TPM és Secure Boot követelményeket kijátssza (Windows 11 régi gépen is)
+
+## Projekt struktúra
+
+```
+windows-local-setup/
+├── autounattend.xml
+├── Setup/
+│   └── Install-Apps.ps1
+├── Sources/
+│   └── $OEM$/
+│       └── $$/
+│           └── Setup/
+│               └── Scripts/
+│                   └── SetupComplete.cmd
+└── README.md
+```
+
+## Telepítés lépései
+
+1. Készíts egy Windows telepítő USB-t a hivatalos [Media Creation Tool](https://www.microsoft.com/software-download/windows10) vagy [Windows 11](https://www.microsoft.com/software-download/windows11) segítségével.
+2. Másold a `autounattend.xml` fájlt a telepítő USB gyökerébe.
+3. Másold a `Setup` mappát (benne az `Install-Apps.ps1`-vel) az USB-re.
+4. Másold a `Sources\$OEM$\$$\Setup\Scripts\SetupComplete.cmd` fájlt is a megfelelő helyre a telepítőn belül (ezt a gyakorlatban a telepítő mappában kell elhelyezni).
+5. Indítsd el a telepítést az USB-ről.
+6. A partíciózást manuálisan végezd el a telepítő felületén.
+7. A helyi felhasználó nevet add meg (nem Microsoft fiók).
+8. A telepítés végén automatikusan lefut az `Install-Apps.ps1` szkript.
+
+## Példa `Install-Apps.ps1` szkript
+
+```powershell
+# Példa alkalmazás telepítések winget-tel
+
+Write-Output "Telepítés elkezdődött..."
+
+if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    Write-Output "winget nem található, ellenőrizd a telepítést!"
+} else {
+    winget install --id=VideoLAN.VLC -e --silent
+    winget install --id=7zip.7zip -e --silent
+    winget install --id=Notepad++.Notepad++ -e --silent
+}
+
+Write-Output "Telepítés befejezve."
+```
+
+
+Testreszabás
+Felhasználónév és jelszó: módosítsd a DefaultUser.ps1 fájlban.
+
+Eltávolítandó alkalmazások: a RemovePackages.ps1 fájlban testreszabható.
+
+Telepítendő programok: Install-Apps.ps1 szkriptbe tehetők, például winget segítségével.
+
+Időzóna, nyelv, billentyűzet: autounattend.xml fájlban módosítható.
+
+Fontos megjegyzések
+A TPM és Secure Boot megkerülése a registry módosításával nem hivatalos, és nem garantált, hogy minden gépen működik.
+
+A telepítés során a Windows automatikusan elfogadja a licencfeltételeket.
+
+A helyi fiók létrehozása Microsoft-fiók használata nélkül lehetséges.
+
+Minden szkript futtatása PowerShellben történik, a végrehajtási házirend Bypass állapotban.
+
+Közreműködés
+Ha javítanál vagy fejlesztenél a projekten, kérlek hozz létre pull requestet vagy issue-t.
+
+Licenc
+Ez a projekt szabadon felhasználható és módosítható.
+
+Kapcsolat
+Készítette: Gabywap
+Dátum: 2025.07.06
