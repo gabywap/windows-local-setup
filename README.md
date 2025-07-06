@@ -88,21 +88,6 @@ Ez a projekt egy `autounattend.xml` fájlt tartalmaz, amely lehetővé teszi a W
 - Telepítés végén automatikusan futtat egy PowerShell szkriptet (programtelepítéshez)
 - TPM és Secure Boot követelményeket kijátssza (Windows 11 régi gépen is)
 
-## Projekt struktúra
-
-```
-windows-local-setup/
-├── autounattend.xml
-├── Setup/
-│   └── Install-Apps.ps1
-├── Sources/
-│   └── $OEM$/
-│       └── $$/
-│           └── Setup/
-│               └── Scripts/
-│                   └── SetupComplete.cmd
-└── README.md
-```
 
 ## Telepítés lépései
 
@@ -139,8 +124,6 @@ Ez a projekt egy teljesen **automatikus, testreszabott Windows 10 / 11 telepít�
 ---
 
 ## 📁 Fájlstruktúra
-
-windows-local-setup/
 
 
 ├── autounattend.xml
