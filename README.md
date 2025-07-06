@@ -132,6 +132,97 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
 
 Write-Output "Telepítés befejezve."
 ```
+# 🪟 Windows Local Setup (Windows 11/10)
+
+Ez a projekt egy teljesen **automatikus, testreszabott Windows 10 / 11 telepítést** tesz lehetővé `autounattend.xml` segítségével. A rendszer telepítése közben PowerShell szkriptek futnak le, melyek eltávolítanak felesleges alkalmazásokat, engedélyeznek hasznos beállításokat, és helyi felhasználót használnak Microsoft-fiók helyett.
+
+---
+
+
+
+# 🪟 Windows Local Setup (Windows 11/10)
+
+Ez a projekt egy teljesen **automatikus, testreszabott Windows 10 / 11 telepítést** tesz lehetővé `autounattend.xml` segítségével. A rendszer telepítése közben PowerShell szkriptek futnak le, melyek eltávolítanak felesleges alkalmazásokat, engedélyeznek hasznos beállításokat, és helyi felhasználót használnak Microsoft-fiók helyett.
+
+---
+
+## 📁 Fájlstruktúra
+windows-local-setup/
+<pre> ``` windows-local-setup/ ├── autounattend.xml ├── Setup/ │ └── Install-Apps.ps1 ├── Sources/ │ └── $OEM$/ │ └── $$/ │ └── Setup/ │ └── Scripts/ │ └── SetupComplete.cmd └── README.md ``` </pre>
+
+---
+
+---
+
+## ⚙️ Funkciók
+
+- 🇭🇺 Telepítés magyar nyelven
+- 💻 Helyi felhasználói fiók létrehozása, Microsoft-fiók kihagyása
+- 💣 Alkalmazások eltávolítása (Xbox, Bing, Skype, OneDrive, stb.)
+- 🔐 TPM, Secure Boot, RAM minimum megkerülése (Windows 11 esetén)
+- 🧠 SmartScreen, Bing keresés, telemetria kikapcsolása
+- 🧩 Start menü és tálca testreszabása
+- 🖥️ Távoli asztal engedélyezése
+- 🧪 PowerShell szkriptek automatikus futtatása
+- 📦 `C:\Windows.old` eltávolítása
+- 📁 Látható Asztal ikonok (Sajátgép, Lomtár, stb.)
+
+---
+
+## 🧰 Rendszerkövetelmények
+
+- Windows 10 vagy Windows 11 ISO (bármilyen kiadás)
+- Rufus vagy más eszköz a bootolható pendrive-hoz
+- Min. 8 GB USB meghajtó
+
+---
+
+## 🛠️ Használat
+
+1. Töltsd le a repót:  
+   [https://github.com/gabywap/windows-local-setup](https://github.com/gabywap/windows-local-setup)
+
+2. Másold fel a fájlokat a pendrive-ra:
+
+   - `autounattend.xml` → gyökérbe
+   - `Sources\$OEM$\$$\Setup\Scripts\SetupComplete.cmd` → ISO `Sources` mappájába
+   - `Setup\Install-Apps.ps1` → gyökér vagy más egyéni hely
+
+3. Bootolj be az USB-ről, és indul a telepítés
+
+---
+
+## 💡 PowerShell szkriptek rövid leírása
+
+- `Install-Apps.ps1`: Telepíti az általad megadott programokat (ha van ilyen listád)
+- `SetupComplete.cmd`: A telepítés legvégén fut, itt hívódnak meg a PowerShell szkriptek
+- `RemovePackages.ps1`: Xbox, Skype, Bing, OneDrive stb. eltávolítása
+- `RemoveCapabilities.ps1`: Fax, Hello Face, Steps Recorder eltávolítása
+- `Specialize.ps1`: Frissítési korlátok megkerülése, SmartScreen és telemetria letiltása
+- `UserOnce.ps1`: Felhasználói asztal ikonok, keresősáv beállítás
+- `FirstLogon.ps1`: Telepítés utáni takarítás (pl. Windows.old törlés)
+
+---
+
+## 🧪 Extra lehetőségek
+
+- Bővítheted `Install-Apps.ps1`-t pl. `winget` programlista alapján
+- `SetupComplete.cmd` segítségével bármilyen parancs lefuttatható
+- `autounattend.xml` bővíthető automatikus partícióval is (de most interaktívra van állítva)
+
+---
+
+## 🤝 Közreműködés
+
+Szívesen veszek minden javaslatot, pull requestet vagy hibajelentést.
+
+**GitHub:** [@gabywap](https://github.com/gabywap)
+
+---
+
+## 📝 Megjegyzés
+
+Ez a rendszer célja, hogy egy minimalista, felesleges funkcióktól mentes, gyors Windows rendszert adjon, különösen Windows 11 esetén, ahol sok beépített korlátozást el kell kerülni.
 
 
 Testreszabás
