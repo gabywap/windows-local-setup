@@ -1,4 +1,4 @@
-# Windows 11 automatikus telepítés helyi fiókkal, manuális partícionálás nélkül
+﻿# Windows 11 automatikus telepítés helyi fiókkal, manuális partícionálás nélkül
 
 Ez a repository egy **automatikus Windows 11 telepítéshez** használható `autounattend.xml` fájlt és PowerShell szkripteket tartalmaz, amelyekkel a telepítés teljesen automatizált, magyar nyelvű, és **helyi fiókot** hoz létre Microsoft-fiók nélkül.
 
@@ -362,6 +362,15 @@ exit
 ---
 
 ## ✅ Tervek, TODO
+
+- [x] Teljes autounattend.xml dokumentáció
+- [x] Windows 11 és 10 támogatás
+- [x] SetupComplete és FirstLogon szkriptek működtetése
+- [x] Winget-tel alkalmazások automatikus telepítése
+- [ ] Grafikus szoftverválasztó készítése PowerShell-ben
+- [ ] Beállítások testreszabása egyszerű menüből (pl. dark mode, telemetria)
+- [ ] ISO fájl automatikus generálása a repóból
+
 
 -
 
