@@ -121,21 +121,7 @@ Write-Output "Telepítés befejezve."
 
 Ez a projekt egy teljesen **automatikus, testreszabott Windows 10 / 11 telepítést** tesz lehetővé `autounattend.xml` segítségével. A rendszer telepítése közben PowerShell szkriptek futnak le, melyek eltávolítanak felesleges alkalmazásokat, engedélyeznek hasznos beállításokat, és helyi felhasználót használnak Microsoft-fiók helyett.
 
----
 
-## 📁 Fájlstruktúra
-
-
-├── autounattend.xml
-├── Setup/
-│   └── Install-Apps.ps1
-├── Sources/
-│   └── $OEM$/
-│       └── $$/ 
-│           └── Setup/
-│               └── Scripts/
-│                   └── SetupComplete.cmd
-└── README.md
 
 ---
 
@@ -288,6 +274,122 @@ Szívesen veszek minden javaslatot, pull requestet vagy hibajelentést.
 **GitHub:** [@gabywap](https://github.com/gabywap)
 
 ---
+
+# 💻 Windows Local Setup – Automatikus Telepítés Windows 10/11-hez
+
+Ez a projekt teljesen automatizált Windows 10 és Windows 11 telepítést tesz lehetővé, `autounattend.xml` fájl és PowerShell szkriptek segítségével. A cél: egy előre konfigurált, megtisztított, offline működő Windows környezet létrehozása, manuális beavatkozás nélkül.
+
+> ⚠️ A Windows 10 támogatása 2025. októberében lejár. Ez a projekt elsősorban Windows 11-re optimalizált, de Windows 10-zel is kompatibilis.
+
+---
+
+## 📁 Fájlstruktúra
+
+```bash
+windows-local-setup/
+├── README.md                                  # Ez a dokumentáció
+├── autounattend.xml                           # Automatikus telepítési konfiguráció
+├── Setup/
+│   ├── AutoInstall.exe                        # Kézi futtatás indító (ha nem automatikus)
+│   ├── Install-Apps.ps1                       # Alkalmazások telepítése winget-tel
+│   └── Install-Apps - Install Software and More.lnk   # Parancsikon a fenti scripthez
+├── sources/
+│   └── $OEM$/
+│       ├── $1/
+│       │   └── Setup/                         # Másolódik a C:\Setup mappába
+│       │       ├── AutoInstall.exe
+│       │       ├── Install-Apps.ps1
+│       │       └── Install-Apps - Install Software and More.lnk
+│       └── $$/
+│           └── Setup/
+│               └── Scripts/
+│                   └── FilesU/
+│                       ├── FirstLogon.ps1    # Utolsó újraindítás után lefut (pl. C:\Windows.old törlés)
+│                       └── SetupComplete.cmd # Másolja a Setup mappa tartalmát az Asztalra
+```
+
+---
+
+## ⚙️ Mit csinál a rendszer?
+
+### 🛠️ `autounattend.xml`
+
+- Magyar nyelv és billentyűzet kiosztás (hu-HU)
+- TPM, Secure Boot és RAM ellenőrzés kikapcsolása
+- Automatikus partícionálás (vagy manuális, ha úgy állítod)
+- Helyi fiók létrehozása Microsoft-fiók nélkül
+- Szkriptek futtatása a következő szakaszokban:
+  - `Specialize` – rendszer finomhangolás (telemetria tiltás, felesleges appok törlése)
+  - `FirstLogon` – pl. C:\Windows.old mappa törlése
+
+### 📦 `Install-Apps.ps1`
+
+- Automatikusan telepíti a megadott programokat (pl. Total Commander, 7-Zip, Notepad++, stb.) `winget` csomagkezelővel.
+- Elérhető akár automatikusan, akár parancsikonnal a felhasználó asztalán.
+
+### 🗂️ `SetupComplete.cmd`
+
+- Lefut az utolsó újraindítás után
+- Tartalma:
+
+```bat
+@echo off
+xcopy /Y /E /I "%SystemDrive%\Setup" "%UserProfile%\Desktop\Setup"
+exit
+```
+
+- Vagyis a `C:\Setup` mappa tartalmát bemásolja az asztalra, hogy kéznél legyen az `Install-Apps` script vagy az `AutoInstall.exe`
+
+### 🧹 `RemovePackages.ps1`, `RemoveCapabilities.ps1`
+
+- Előtelepített felesleges appok, például:
+  - Xbox, Bing Search, Skype, Maps, YourPhone, stb.
+  - Felesleges funkciók (pl. Fax, Steps Recorder)
+
+### 🧑‍💻 `FirstLogon.ps1`
+
+- A legvégén fut le, és törli például a `C:\Windows.old` mappát
+
+---
+
+## 💡 Használat
+
+1. **Másold** a projekt teljes tartalmát egy Windows ISO-ba (`sources` mappába az `autounattend.xml` mellé)
+2. **Hozz létre bootolható USB-t** pl. [Rufus](https://rufus.ie) vagy `dism` segítségével
+3. **Bootolj róla**, és a rendszer automatikusan települ (ha jól van konfigurálva)
+4. **A Setup mappa az asztalon lesz**, ahonnan a szoftvertelepítés manuálisan is elindítható
+
+---
+
+## ✅ Tervek, TODO
+
+-
+
+---
+
+## 🤝 Támogatás
+
+Ha hasznosnak találod ezt a projektet, és szeretnél egy kávéval támogatni:
+
+☕️ **PayPal:** [paypal.me/gabywap](https://paypal.me/gabywap)
+
+Ezzel segítheted a további fejlesztést és dokumentálást. Hálás köszönet előre is!
+
+---
+
+## 📌 Kapcsolódó
+
+- Windows 11 minimal setup: [https://christitus.com/win](https://christitus.com/win)
+- Winget dokumentáció: [https://learn.microsoft.com/en-us/windows/package-manager/](https://learn.microsoft.com/en-us/windows/package-manager/)
+
+---
+
+🧠 **Autodidakta vagyok, nem profi – de amit lehet, igyekszem érthetően és hasznosan megosztani.** Ha kérdésed van, nyugodtan nyiss egy issue-t vagy küldj üzenetet.
+
+> A projekt célja egy letisztult, karbantartható Windows alap rendszer automatikus előkészítése újratelepítésekhez. Használata saját felelősségre.
+
+
+
 
 ## 📝 Megjegyzés
 
