@@ -292,20 +292,20 @@ windows-local-setup/
 ├── Setup/
 │   ├── AutoInstall.exe                        # Kézi futtatás indító (ha nem automatikus)
 │   ├── Install-Apps.ps1                       # Alkalmazások telepítése winget-tel
-│   └── Install-Apps - Install Software and More.lnk   # Parancsikon a fenti scripthez
+│   ├── Install-Apps - Install Software and More.lnk   # Parancsikon a fenti scripthez
+│   └── FirstLogon.ps1                         # Parancsikon másolás, Windows.old törlés, naplózás
 ├── sources/
 │   └── $OEM$/
 │       ├── $1/
 │       │   └── Setup/                         # Másolódik a C:\Setup mappába
 │       │       ├── AutoInstall.exe
 │       │       ├── Install-Apps.ps1
-│       │       └── Install-Apps - Install Software and More.lnk
+│       │       ├── Install-Apps - Install Software and More.lnk
+│       │       └── FirstLogon.ps1
 │       └── $$/
 │           └── Setup/
 │               └── Scripts/
-│                   └── FilesU/
-│                       ├── FirstLogon.ps1    # Utolsó újraindítás után lefut (pl. C:\Windows.old törlés)
-│                       └── SetupComplete.cmd # Másolja a Setup mappa tartalmát az Asztalra
+│                   └── SetupComplete.cmd     # Elindítja a FirstLogon.ps1-et az utolsó újraindítás után
 ```
 
 ---
@@ -316,39 +316,33 @@ windows-local-setup/
 
 - Magyar nyelv és billentyűzet kiosztás (hu-HU)
 - TPM, Secure Boot és RAM ellenőrzés kikapcsolása
-- Automatikus partícionálás (vagy manuális, ha úgy állítod)
-- Helyi fiók létrehozása Microsoft-fiók nélkül
+- Automatikus vagy manuális partícionálás (beállítástól függően)
+- Helyi fók létrehozása Microsoft-fók nélkül
 - Szkriptek futtatása a következő szakaszokban:
   - `Specialize` – rendszer finomhangolás (telemetria tiltás, felesleges appok törlése)
-  - `FirstLogon` – pl. C:\Windows.old mappa törlése
+  - `FirstLogon` – pl. C:\Windows.old mappa törlése, parancsikon másolása
 
-### 📦 `Install-Apps.ps1`
-
-- Automatikusan telepíti a megadott programokat (pl. Total Commander, 7-Zip, Notepad++, stb.) `winget` csomagkezelővel.
-- Elérhető akár automatikusan, akár parancsikonnal a felhasználó asztalán.
-
-### 🗂️ `SetupComplete.cmd`
+### 📆 `SetupComplete.cmd`
 
 - Lefut az utolsó újraindítás után
-- Tartalma:
+- Elindítja a `C:\Setup\FirstLogon.ps1` scriptet:
 
 ```bat
 @echo off
-xcopy /Y /E /I "%SystemDrive%\Setup" "%UserProfile%\Desktop\Setup"
+powershell.exe -ExecutionPolicy Bypass -File "%SystemDrive%\Setup\FirstLogon.ps1"
 exit
 ```
 
-- Vagyis a `C:\Setup` mappa tartalmát bemásolja az asztalra, hogy kéznél legyen az `Install-Apps` script vagy az `AutoInstall.exe`
+### 👨‍💻 FirstLogon.ps1
 
-### 🧹 `RemovePackages.ps1`, `RemoveCapabilities.ps1`
+- ``** mappa törlése**
+- **Install-Apps parancsikon másolása az Asztalra**
+- **Naplózás:** `%TEMP%\FirstLogon.log`
 
-- Előtelepített felesleges appok, például:
-  - Xbox, Bing Search, Skype, Maps, YourPhone, stb.
-  - Felesleges funkciók (pl. Fax, Steps Recorder)
+### 📆 `Install-Apps.ps1`
 
-### 🧑‍💻 `FirstLogon.ps1`
-
-- A legvégén fut le, és törli például a `C:\Windows.old` mappát
+- Automatikusan telepíti a megadott programokat (pl. Total Commander, 7-Zip, Notepad++, stb.) `winget` csomagkezelővel
+- Elindítható automatikusan vagy a parancsikonnal a felhasználó Asztaláról
 
 ---
 
@@ -361,18 +355,12 @@ exit
 
 ---
 
-## ✅ Tervek, TODO
+## ✅ TODO
 
-- [x] Teljes autounattend.xml dokumentáció
-- [x] Windows 11 és 10 támogatás
-- [x] SetupComplete és FirstLogon szkriptek működtetése
-- [x] Winget-tel alkalmazások automatikus telepítése
-- [ ] Grafikus szoftverválasztó készítése PowerShell-ben
-- [ ] Beállítások testreszabása egyszerű menüből (pl. dark mode, telemetria)
-- [ ] ISO fájl automatikus generálása a repóból
-
-
--
+- 🔍 Hibakeresés logokból
+- 📚 README bővítése angolul is
+- ✨ GUI-sabb AutoInstall.exe
+- ♻️ ISO build folyamat automatizálása
 
 ---
 
@@ -396,7 +384,6 @@ Ezzel segítheted a további fejlesztést és dokumentálást. Hálás köszöne
 🧠 **Autodidakta vagyok, nem profi – de amit lehet, igyekszem érthetően és hasznosan megosztani.** Ha kérdésed van, nyugodtan nyiss egy issue-t vagy küldj üzenetet.
 
 > A projekt célja egy letisztult, karbantartható Windows alap rendszer automatikus előkészítése újratelepítésekhez. Használata saját felelősségre.
-
 
 
 
