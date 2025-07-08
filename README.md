@@ -341,8 +341,44 @@ exit
 
 ### 📆 `Install-Apps.ps1`
 
-- Automatikusan telepíti a megadott programokat (pl. Total Commander, 7-Zip, Notepad++, stb.) `winget` csomagkezelővel
-- Elindítható automatikusan vagy a parancsikonnal a felhasználó Asztaláról
+### Telepített alkalmazások a `Install-Apps.ps1` segítségével
+
+A szkript az alábbi programokat telepíti automatikusan a `winget` csomagkezelő segítségével:
+
+| Név                  | Leírás                                      |
+|----------------------|---------------------------------------------|
+| Microsoft.DirectX     | DirectX futtatási környezet játékokhoz     |
+| IrfanSkiljan.IrfanView | Népszerű képfájl nézegető és szerkesztő   |
+| IrfanSkiljan.IrfanView.PlugIns | Kiegészítő pluginok IrfanView-hoz     |
+| Google.Chrome        | Google Chrome böngésző                       |
+| Daum.PotPlayer       | Videólejátszó                                |
+| VideoLAN.VLC         | VLC médialejátszó                            |
+| Opera.Opera          | Opera böngésző                               |
+| Mozilla.Firefox.hu   | Firefox böngésző magyar nyelven              |
+| 7zip.7zip            | 7-Zip tömörítő program                       |
+| Brave.Brave          | Brave böngésző, privát böngészéshez         |
+| Ghisler.TotalCommander | Total Commander fájlkezelő                   |
+| MathiasSvensson.MultiCommander | Multi Commander fájlkezelő               |
+| Piriform.CCleaner    | CCleaner, rendszerkarbantartó eszköz        |
+| Notepad++.Notepad++  | Notepad++ szövegszerkesztő                   |
+| Winamp.Winamp        | Winamp médialejátszó                         |
+| AIMP.AIMP            | AIMP zenelejátszó                            |
+
+Ez a lista bővíthető a `Install-Apps.ps1` szkript módosításával.
+
+---
+
+**Megjegyzés:** A szkript csendes módban telepíti az alkalmazásokat, így a telepítési ablakok nem jelennek meg, és az esetleges licencfeltételek automatikusan elfogadásra kerülnek a paraméterek miatt.
+
+---
+
+## Használat
+
+A szkript futtatásához Windows rendszeren PowerShell-ben adminisztrátori jogosultság szükséges, és a `winget` csomagkezelőnek elérhetőnek kell lennie.
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\Install-Apps.ps1
+
 
 ---
 

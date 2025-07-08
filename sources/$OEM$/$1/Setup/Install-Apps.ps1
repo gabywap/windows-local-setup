@@ -1,4 +1,15 @@
-﻿$apps = @(
+﻿# Install-Apps.ps1
+# Programok automatikus telepítése winget használatával
+
+Write-Output "Telepítés elkezdődött..."
+
+if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    Write-Output "winget nem található, ellenőrizd a telepítést!"
+    exit 1
+}
+
+# Telepítendő programok listája
+$apps = @(
     "Microsoft.DirectX",
     "IrfanSkiljan.IrfanView",
     "IrfanSkiljan.IrfanView.PlugIns",
@@ -18,11 +29,9 @@
 )
 
 foreach ($app in $apps) {
-    Write-Host "`n🔄 Telepítés: $app" -ForegroundColor Cyan
-    try {
-        winget install --id=$app -e --silent --accept-package-agreements --accept-source-agreements
-    } catch {
-        Write-Warning "⚠️ Hiba a(z) $app telepítése közben: $_"
-    }
+    Write-Output "Telepítés: $app"
+    winget install --id=$app -e --silent --accept-package-agreements --accept-source-agreements
 }
-Write-Host "`n✅ Kész minden program telepítésével!" -ForegroundColor Green
+
+Write-Output "Telepítés befejezve."
+
