@@ -1,4 +1,4 @@
-# FirstLogon.ps1 – első bejelentkezéskor fut le
+﻿# FirstLogon.ps1 – első bejelentkezéskor fut le
 
 # 1. Windows.old mappa törlése (ha lenne)
 cmd.exe /c "rmdir C:\Windows.old /S /Q"

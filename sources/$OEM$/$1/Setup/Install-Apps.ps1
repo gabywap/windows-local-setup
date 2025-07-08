@@ -1,4 +1,4 @@
-$apps = @(
+﻿$apps = @(
     "Microsoft.DirectX",
     "IrfanSkiljan.IrfanView",
     "IrfanSkiljan.IrfanView.PlugIns",

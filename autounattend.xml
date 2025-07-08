@@ -131,7 +131,7 @@ Ez a repository egy **Windows 10 és Windows 11 manuális partícionálás nélk
       <FirstLogonCommands>
         <SynchronousCommand wcm:action="add">
           <Order>1</Order>
-          <CommandLine>powershell.exe -WindowStyle Normal -NoProfile -Command "Get-Content -LiteralPath 'C:\Windows\Setup\Scripts\FirstLogon.ps1' -Raw | Invoke-Expression;"</CommandLine>
+          <CommandLine>powershell.exe -WindowStyle Normal -NoProfile -Command "Get-Content -LiteralPath 'C:\Setup\FirstLogon.ps1' -Raw | Invoke-Expression;"</CommandLine>
           <!-- Első bejelentkezéskor lefutó PowerShell parancs -->
         </SynchronousCommand>
       </FirstLogonCommands>
@@ -347,7 +347,7 @@ foreach( $s in $scripts ) {
     </File>
 
     <!-- DefaultUser.ps1: alapértelmezett felhasználó profil és fiók beállítása helyileg -->
-    <File path="C:\Windows\Setup\Scripts\DefaultUser.ps1">
+    <File path="C:\Setup\Scripts\DefaultUser.ps1">
       <![CDATA[
 $UserName = 'LokálisFelhasználó'
 $Password = 'Jelszo123!' | ConvertTo-SecureString -AsPlainText -Force
@@ -358,7 +358,7 @@ Remove-LocalUser -Name 'Administrator' # opcionális, ha az alapértelmezett adm
     </File>
 
     <!-- FirstLogon.ps1: első bejelentkezéskor lefutó szkript -->
-    <File path="C:\Windows\Setup\Scripts\FirstLogon.ps1">
+    <File path="C:\Setup\Scripts\FirstLogon.ps1">
       <![CDATA[
 # Példa: első indításkor frissítések telepítése, extra programok
 Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy Bypass -File C:\Windows\Setup\Scripts\Install-Apps.ps1' -NoNewWindow -Wait
@@ -366,7 +366,7 @@ Start-Process -FilePath 'powershell.exe' -ArgumentList '-ExecutionPolicy Bypass 
     </File>
 
     <!-- Install-Apps.ps1: további programok telepítése telepítés után (például winget alapú csomagok) -->
-    <File path="C:\Windows\Setup\Scripts\Install-Apps.ps1">
+    <File path="C:\Setup\Scripts\Install-Apps.ps1">
       <![CDATA[
 # Példa parancsok itt, winget, chocolatey, vagy saját telepítők
       ]]>
