@@ -78,6 +78,11 @@ Ez a repository egy **Windows 10 és Windows 11 manuális partícionálás nélk
     <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
       <RunSynchronous>
         <!-- Több parancs szkriptből: egyedi Powershell futtatás, reg betöltés -->
+		<RunSynchronousCommand wcm:action="add">
+       <Order>0</Order>
+       <Description>Bypass NRO</Description>
+       <Path>cmd /c reg add HKLM\SYSTEM\Setup\LabConfig /v BypassNRO /t REG_DWORD /d 1 /f</Path>
+       </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
           <Order>1</Order>
           <Path>powershell.exe -WindowStyle Normal -NoProfile -Command "$xml = [xml]::new(); $xml.Load('C:\Windows\Panther\unattend.xml'); $sb = [scriptblock]::Create( $xml.unattend.Extensions.ExtractScript ); Invoke-Command -ScriptBlock $sb -ArgumentList $xml;"</Path>
@@ -123,11 +128,11 @@ Ez a repository egy **Windows 10 és Windows 11 manuális partícionálás nélk
 
     <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
       <OOBE>
-        <ProtectYourPC>3</ProtectYourPC>             <!-- Automatikusan később frissítések, nem ajánlja az ajánlottat -->
-        <HideEULAPage>true</HideEULAPage>            <!-- EULA oldal elrejtése -->
-        <HideWirelessSetupInOOBE>false</HideWirelessSetupInOOBE> <!-- WiFi beállítás megjelenik -->
-        <HideOnlineAccountScreens>true</HideOnlineAccountScreens> <!-- Microsoft fiók létrehozás elrejtése -->
-      </OOBE>
+    <ProtectYourPC>3</ProtectYourPC> <!-- Nem ajánlja az ajánlott frissítéseket -->
+    <HideEULAPage>true</HideEULAPage> <!-- EULA oldal elrejtése -->
+    <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE> <!-- Ne jelenjen meg a WiFi csatlakozás kérése -->
+    <HideOnlineAccountScreens>true</HideOnlineAccountScreens> <!-- Microsoft-fiók erőltetés kikapcsolása -->
+</OOBE>
       <FirstLogonCommands>
         <SynchronousCommand wcm:action="add">
           <Order>1</Order>
